@@ -8,7 +8,9 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 @st.cache_data
 def create_embeddings(uploaded_file):
     pages = split_file(uploaded_file)
-    faiss_index = FAISS.from_documents(pages, OpenAIEmbeddings(openai_api_key=API_KEY))
+    filtered_pages = [page for page in pages if page.page_content != '']
+
+    faiss_index = FAISS.from_documents(filtered_pages, OpenAIEmbeddings(openai_api_key=API_KEY))
     return(faiss_index)
 
 def split_file(uploaded_file):
@@ -65,50 +67,21 @@ if uploaded_file is not None:
 
     if submitted:
         docs = faiss_index.similarity_search(query, k=n_sources)
-
-        with st.spinner("Locating sources..."):
-            with st.container():
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    temperature=0.9,
-                    messages=[
+        
+        for doc in docs:
+            with st.spinner("Locating sources..."):
+                with st.container():
+                    response = openai.ChatCompletion.create(
+                        model="gpt-3.5-turbo",
+                        temperature=0.9,
+                        messages=[
                             {"role": "system", "content":  system_prompts[style]},
-                            {"role": "user", "content": docs[0].page_content},
+                            {"role": "user", "content": doc.page_content},
                         ]
-                )
-                st.markdown("**Page " + str(docs[0].metadata["page"]) + "**")
-                st.markdown(response["choices"][0]["message"]["content"])
-                with st.expander("See text"):
-                    st.markdown(docs[0].page_content)
-
-        with st.spinner("Locating sources..."):
-            with st.container():
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    temperature=0.9,
-                    messages=[
-                            {"role": "system", "content":  system_prompts[style]},
-                            {"role": "user", "content": docs[1].page_content},
-                        ]
-                )     
-                st.markdown("**Page " + str(docs[1].metadata["page"]) + "**")
-                st.markdown(response["choices"][0]["message"]["content"])
-                with st.expander("See text"):
-                    st.markdown(docs[1].page_content)
-
-        with st.spinner("Locating sources..."):
-            with st.container():
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    temperature=0.9,
-                    messages=[
-                            {"role": "system", "content":  system_prompts[style]},
-                            {"role": "user", "content": docs[2].page_content},
-                        ]
-                )
-                st.markdown("**Page " + str(docs[2].metadata["page"]) + "**")
-                st.markdown(response["choices"][0]["message"]["content"])
-                with st.expander("See text"):
-                    st.markdown(docs[2].page_content)
+                    )
+                    st.markdown("**Page " + str(doc.metadata["page"]) + "**")
+                    st.markdown(response["choices"][0]["message"]["content"])
+                    with st.expander("See text"):
+                        st.markdown(doc.page_content)
 
         st.button("See more sources")
