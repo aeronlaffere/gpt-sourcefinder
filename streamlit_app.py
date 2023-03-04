@@ -41,7 +41,7 @@ st.set_page_config(
 st.sidebar.image("logo.png", width=200)
 API_KEY = st.sidebar.text_input("`OpenAI API Key:`", value="", type="password")
 st.sidebar.write("You need an OpenAI API key to run this demo. You can get one [here](https://platform.openai.com/signup).")
-st.sidebar.write("This application was developed by [@aeronjl](https://twitter.com/aeronjl) and is open source. You can find the source code [here](https://github.com/aeronlaffere).")
+st.sidebar.write("This application was developed by [@aeronjl](https://twitter.com/aeronjl) and is open source. You can find the source code [here](https://github.com/aeronlaffere/gpt-sourcefinder).")
 st.sidebar.write("### Options")
 style = st.sidebar.selectbox(label="Summarisation style", options=["Informative", "Engaging", "Creative"])
 n_sources = st.sidebar.slider(label="Number of sources", min_value=1, max_value=5, value=3)
